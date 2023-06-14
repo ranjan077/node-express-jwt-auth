@@ -2,7 +2,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
 const cookieParser = require('cookie-parser');
-// const { requireAuth } = require('./middleware/authMiddleware');
+const { requireAuth } = require('./middleware/authMiddleware');
+const dotenv = require('dotenv');
+
+// Set path to .env file
+dotenv.config({ path: './.env' });
 
 const app = express();
 
@@ -16,7 +20,8 @@ app.set('view engine', 'ejs');
 
 // database connection
 
-const dbURI = 'mongodb+srv://test:test@cluster0.z1g5yrb.mongodb.net/node-auth';
+const dbURI = process.env.MONGODB_CONNECTION_URL;
+console.log('MONGODB_CONNECTION_URL: ', dbURI)
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex:true })
   .then((result) => app.listen(3000, (err) => {
     if(err) {
@@ -30,5 +35,5 @@ mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true, useCr
 
 // routes
 app.get('/', (req, res) => res.render('home'));
-app.get('/smoothies', (req, res) => res.render('smoothies'));
+app.get('/smoothies', requireAuth, (req, res) => res.render('smoothies'));
 app.use(authRoutes);
